@@ -1,4 +1,4 @@
-# Consul Get Started on VMs
+# Testing Consul Get Started on VMs
 
 The code in this repository contains companion scenarios for the Consul tutorial collection [Get Started on VMs](https://developer.hashicorp.com/consul/tutorials/get-started-vms).
 
