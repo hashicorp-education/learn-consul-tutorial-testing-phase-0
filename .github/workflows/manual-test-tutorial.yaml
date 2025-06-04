@@ -15,6 +15,6 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Checkout
-      run: actions/checkout
+      uses: actions/checkout@v4
     - name: Figure path
       run: pwd && ls -la
