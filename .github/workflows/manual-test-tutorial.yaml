@@ -29,5 +29,9 @@ jobs:
         cd self-managed/infrastructure/docker/images
         ./generate_variables.sh
         ./build_images.sh
-    - name: Figure Path
-      run: pwd
+    - name: Run GS 1
+      run: |
+        cd self-managed/infrastructure/docker
+        terraform init
+        terraform destroy --auto-approve
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
