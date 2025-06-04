@@ -9,7 +9,7 @@ function get_envoy_version() {
 
     CONSUL_VER=$1
 
-    CONSUL_VER=`echo ${CONSUL_VER} | sed 's/\.[0-9]*$/.x/g'`
+    # CONSUL_VER=`echo ${CONSUL_VER} | sed 's/\.[0-9]*$/.x/g'`
 
     ## [warn] [flow] Get compatible Envoy Version relies on a web page content
     ## Logic
@@ -36,12 +36,15 @@ function get_envoy_version() {
     ## 04 Select only the first row
     ## 05 Remove trailing comma
 
-    ENVOY_VER=`curl -s https://raw.githubusercontent.com/hashicorp/consul/main/website/content/docs/connect/proxies/envoy.mdx | \
-    grep --color=never -P "${CONSUL_VER}\sCE" | \
-    head -1 | \
-    grep -Po "[0-9\.]+x," | \
-    head -1 | \
-    sed 's/,//'`
+    # ENVOY_VER=`curl -s https://raw.githubusercontent.com/hashicorp/consul/main/website/content/docs/connect/proxies/envoy.mdx | \
+    # grep --color=never -P "${CONSUL_VER}\sCE" | \
+    # head -1 | \
+    # grep -Po "[0-9\.]+x," | \
+    # head -1 | \
+    # sed 's/,//'`
+
+    ENVOY_VER=`curl -s https://raw.githubusercontent.com/hashicorp/consul/refs/tags/v${CONSUL_VER}/envoyextensions/xdscommon/ENVOY_VERSIONS | \
+        grep '^[[:digit:]]' | sort -nr | head -n 1`
 
     echo ${ENVOY_VER}
 }
