@@ -28,7 +28,7 @@ jobs:
       run: |
         cd self-managed/infrastructure/docker/images
         ./generate_variables.sh
-        echo `cat variables.env | grep CONSUL_VERSION | sed 's/.*=//'` >> $GITHUB_RELEASE_TAG
+        echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
         ./build_images.sh
     - name: Run GS 1
       run: |
@@ -52,8 +52,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.GITHUB_RELEASE_TAG }}
-        release_name: Release ${{ env.GITHUB_RELEASE_TAG }}
+        tag_name: ${{ env.CONSUL_VERSION }}
+        release_name: Release ${{ env.CONSUL_VERSION }}
         draft: false
         prerelease: false
     - name: Upload Release Asset
