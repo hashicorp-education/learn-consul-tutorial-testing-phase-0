@@ -29,7 +29,7 @@ jobs:
         cd self-managed/infrastructure/docker/images
         ./generate_variables.sh
         ./build_images.sh
-        cat images/variables.env | grep CONSUL_VERSION | sed 's/.*=//' >> $GITHUB_RELEASE_TAG
+        cat variables.env | grep CONSUL_VERSION | sed 's/.*=//' >> $GITHUB_RELEASE_TAG
     - name: Run GS 1
       run: |
         cd self-managed/infrastructure/docker
