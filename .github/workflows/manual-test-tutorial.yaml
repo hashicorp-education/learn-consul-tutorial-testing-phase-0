@@ -36,7 +36,7 @@ jobs:
     - name: Build Docker Images
       run: |
         cd self-managed/infrastructure/docker/images
-        ./generate_variables.sh ${CONSUL_VERSION}
+        ./generate_variables.sh ${{ vars.CONSUL_VERSION }}
         echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
         ./build_images.sh
     - name: Run GS 1
