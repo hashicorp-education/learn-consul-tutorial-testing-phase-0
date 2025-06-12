@@ -39,12 +39,12 @@ jobs:
         terraform init
         terraform destroy --auto-approve
         terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
-    # - name: Run GS 2
-    #   run: |
-    #     cd self-managed/infrastructure/docker
-    #     terraform init
-    #     terraform destroy --auto-approve
-    #     terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true"
+    - name: Run GS 2
+      run: |
+        cd self-managed/infrastructure/docker
+        terraform init
+        terraform destroy --auto-approve
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true"
     # - name: Create Release
     #   run: |
     #     echo "Create release here"
