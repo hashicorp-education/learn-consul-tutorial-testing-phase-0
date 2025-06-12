@@ -6,7 +6,7 @@ name: Manual workflow
 on: workflow_dispatch
 
 permissions:
-  actions: write # required permission to delete artifact
+  contents: write # required permission to delete artifact
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
