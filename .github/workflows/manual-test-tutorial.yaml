@@ -3,7 +3,13 @@
 name: Manual workflow
 
 # Controls when the action will run. Workflow runs when manually triggered.
-on: workflow_dispatch
+on: 
+  workflow_dispatch:
+    inputs:
+      CONSUL_VERSION:
+        description: 'Consul version for the testing'     
+        required: true
+        default: 'latest'
 
 permissions:
   contents: write # required permission to delete artifact
@@ -30,7 +36,7 @@ jobs:
     - name: Build Docker Images
       run: |
         cd self-managed/infrastructure/docker/images
-        ./generate_variables.sh
+        ./generate_variables.sh ${{ env.CONSUL_VERSION }}
         echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
         ./build_images.sh
     - name: Run GS 1
