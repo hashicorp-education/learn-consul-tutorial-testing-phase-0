@@ -5,6 +5,9 @@ name: Manual workflow
 # Controls when the action will run. Workflow runs when manually triggered.
 on: workflow_dispatch
 
+permissions:
+  actions: write # required permission to delete artifact
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "greet"
@@ -46,23 +49,33 @@ jobs:
     #   run: |
     #     echo "Create release here"
     #     ls -l runbooks
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Create Release
+    #   id: create_release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ env.CONSUL_VERSION }}
+    #     release_name: Release ${{ env.CONSUL_VERSION }}
+    #     draft: false
+    #     prerelease: false
+    
+    # - name: Upload Release Asset
+    #   id: upload-release-asset 
+    #   uses: actions/upload-release-asset@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+    #     asset_path: ./runbooks/self_managed-docker-GS_01_deploy_consul_on_vms-runbook.md
+    #     asset_name: GS_01_deploy_consul_on_vms-runbook.md
+    #     asset_content_type: text/markdown
+    - name: Release and publish
+      uses: svenstaro/upload-release-action@v2
       with:
-        tag_name: ${{ env.CONSUL_VERSION }}
-        release_name: Release ${{ env.CONSUL_VERSION }}
-        draft: false
-        prerelease: false
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./runbooks/self_managed-docker-GS_01_deploy_consul_on_vms-runbook.md
-        asset_name: GS_01_deploy_consul_on_vms-runbook.md
-        asset_content_type: text/markdown
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./runbooks/self_managed-docker*
+        tag: ${{ env.CONSUL_VERSION }}
+        overwrite: true
+        file_glob: true
+        body: "Automated release for Consul ${{ env.CONSUL_VERSION }}"
