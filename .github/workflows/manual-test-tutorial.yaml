@@ -11,6 +11,9 @@ on:
         required: true
         default: 'latest'
 
+env:
+  WORKFLOW_STEP_REPORT: ./runbooks/workflow.log
+
 permissions:
   contents: write # required permission to delete artifact
 
@@ -27,6 +30,7 @@ jobs:
       uses: actions/checkout@v4
     - name: Install Prerequisites
       run: |
+        echo "Install prerequisites step" > $WORKFLOW_STEP_REPORT
         sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
         wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
         gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
@@ -35,47 +39,28 @@ jobs:
         sudo apt-get install terraform
     - name: Build Docker Images
       run: |
+        echo "Build Docker Images" > $WORKFLOW_STEP_REPORT
         cd self-managed/infrastructure/docker/images
         ./generate_variables.sh ${{ inputs.CONSUL_VERSION }}
         echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
-        ./build_images.sh
+        ./build_images.sh | tee -a $WORKFLOW_STEP_REPORT
     - name: Run GS 1
       run: |
+        echo "Run GS 1" > $WORKFLOW_STEP_REPORT
         cd self-managed/infrastructure/docker
-        terraform init
-        terraform destroy --auto-approve
-        terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
+        terraform init | tee -a $WORKFLOW_STEP_REPORT
+        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
     - name: Run GS 2
       run: |
+        echo "Run GS 2" > $WORKFLOW_STEP_REPORT
         cd self-managed/infrastructure/docker
-        terraform init
-        terraform destroy --auto-approve
-        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true"
-    # - name: Create Release
-    #   run: |
-    #     echo "Create release here"
-    #     ls -l runbooks
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     tag_name: ${{ env.CONSUL_VERSION }}
-    #     release_name: Release ${{ env.CONSUL_VERSION }}
-    #     draft: false
-    #     prerelease: false
-    
-    # - name: Upload Release Asset
-    #   id: upload-release-asset 
-    #   uses: actions/upload-release-asset@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #   with:
-    #     upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-    #     asset_path: ./runbooks/self_managed-docker-GS_01_deploy_consul_on_vms-runbook.md
-    #     asset_name: GS_01_deploy_consul_on_vms-runbook.md
-    #     asset_content_type: text/markdown
+        terraform init | tee -a $WORKFLOW_STEP_REPORT
+        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+    - name: Echo report
+      run: |
+        cat $WORKFLOW_STEP_REPORT 
     - name: Release and publish
       uses: svenstaro/upload-release-action@v2
       with:

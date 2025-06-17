@@ -78,10 +78,8 @@ function get_latest_consul_version() {
 
 function get_specific_consul_version() {
 
-    set -x
-
     _INPUT="$1"
-    
+
     CONSUL_VER=$(curl -s https://releases.hashicorp.com/consul/ | \
                     grep --color=never -oP '/\K[0-9]+\.[0-9]+\.[0-9]*(?=/)' | \
                     grep --color=never -P "^${_INPUT}(\.|$)" | \
@@ -92,8 +90,6 @@ function get_specific_consul_version() {
     if [ "${CONSUL_VER}" == "" ]; then
         CONSUL_VER=`get_latest_consul_version`
     fi
-
-    set +x 
 
 	echo "${CONSUL_VER}"
 }
