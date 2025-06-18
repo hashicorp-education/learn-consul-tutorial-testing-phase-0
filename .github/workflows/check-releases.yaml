@@ -5,7 +5,7 @@ on:
 
 permissions:
   actions: write
-  content: write
+  contents: write
 
 jobs:
   get-version:
