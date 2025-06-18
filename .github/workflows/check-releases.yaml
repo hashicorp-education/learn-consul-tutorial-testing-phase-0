@@ -30,4 +30,4 @@ jobs:
           git commit -am "New Consul release version `cat .github/workflows/release_version/latest.txt`"
           git fetch
           git pull
-          git push
+          git push origin main
