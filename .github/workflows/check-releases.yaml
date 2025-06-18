@@ -1,0 +1,24 @@
+name: Get latest Consul release
+on:
+  schedule:
+    - cron:  '*/15 * * * *'
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Fetch release version
+        run: |
+          curl -sL https://api.github.com/repos/hashicorp/consul/releases/latest | \
+           jq -r ".tag_name" > .github/workflows/release_version/latest.txt
+      - name: Check for modified files
+        id: git-check
+        run: echo ::set-output name=modified::$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")
+      - name: Commit latest release version
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name ${{ secrets.GH_USERNAME }}
+          git config --global user.email ${{ secrets.GH_MAIL }}
+          git commit -am "New Consul release version `cat .github/workflows/release_version/latest.txt`"
+          git push

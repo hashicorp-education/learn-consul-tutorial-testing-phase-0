@@ -1,6 +1,6 @@
 # This is a basic workflow that is manually triggered
 
-name: Manual workflow
+name: Scenario testing
 
 # Controls when the action will run. Workflow runs when manually triggered.
 on: 
@@ -10,6 +10,9 @@ on:
         description: 'Consul version for the testing'     
         required: true
         default: 'latest'
+  push:
+    paths:
+      - '.github/workflows/release-versions/*'
 
 env:
   WORKFLOW_STEP_REPORT: /home/runner/workflow.log
@@ -39,28 +42,27 @@ jobs:
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
         sudo apt update
         sudo apt-get install terraform
-    - name: Build Docker Images
-      run: |
-        echo "Build Docker Images" > $WORKFLOW_STEP_REPORT
-        cd self-managed/infrastructure/docker/images
-        ./generate_variables.sh ${{ inputs.CONSUL_VERSION }}
-        echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
-        ./build_images.sh | tee -a $WORKFLOW_STEP_REPORT
-    - name: Run GS 1
-      run: |
-        echo "Run GS 1" > $WORKFLOW_STEP_REPORT
-        cd self-managed/infrastructure/docker
-        terraform init | tee -a $WORKFLOW_STEP_REPORT
-        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
-        terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
-        exit 1
-    - name: Run GS 2
-      run: |
-        echo "Run GS 2" > $WORKFLOW_STEP_REPORT
-        cd self-managed/infrastructure/docker
-        terraform init | tee -a $WORKFLOW_STEP_REPORT
-        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
-        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+    # - name: Build Docker Images
+    #   run: |
+    #     echo "Build Docker Images" > $WORKFLOW_STEP_REPORT
+    #     cd self-managed/infrastructure/docker/images
+    #     ./generate_variables.sh ${{ inputs.CONSUL_VERSION }}
+    #     echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
+    #     ./build_images.sh | tee -a $WORKFLOW_STEP_REPORT
+    # - name: Run GS 1
+    #   run: |
+    #     echo "Run GS 1" > $WORKFLOW_STEP_REPORT
+    #     cd self-managed/infrastructure/docker
+    #     terraform init | tee -a $WORKFLOW_STEP_REPORT
+    #     terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+    #     terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+    # - name: Run GS 2
+    #   run: |
+    #     echo "Run GS 2" > $WORKFLOW_STEP_REPORT
+    #     cd self-managed/infrastructure/docker
+    #     terraform init | tee -a $WORKFLOW_STEP_REPORT
+    #     terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+    #     terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
     - name: Create Jira report
       uses: bryannice/gitactions-jira-issue-creation@master
       if: failure()
