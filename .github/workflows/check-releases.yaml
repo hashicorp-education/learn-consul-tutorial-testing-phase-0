@@ -1,7 +1,7 @@
 name: Get latest Consul release
 on:
   schedule:
-    - cron:  '*/5 * * * *'
+    - cron:  '*/15 * * * *'
 
 permissions:
   actions: write
