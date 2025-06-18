@@ -28,4 +28,5 @@ jobs:
           git config --global user.email ${{ secrets.GH_MAIL }}
           git commit -am "New Consul release version `cat .github/workflows/release_version/latest.txt`"
           git fetch
+          git pull
           git push
