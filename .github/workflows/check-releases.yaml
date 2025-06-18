@@ -2,6 +2,7 @@ name: Get latest release
 on:
   schedule:
     - cron:  '*/5 * * * *'
+  # workflow_dispatch: 
 
 permissions:
   actions: write
@@ -28,5 +29,6 @@ jobs:
           git config --global user.name ${{ secrets.GH_USERNAME }}
           git config --global user.email ${{ secrets.GH_MAIL }}
           git commit -am "New Consul release version `cat .github/workflows/release_version/latest.txt`"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/hashicorp-education/learn-consul-tutorial-testing-phase-0
           git pull --ff-only
           git push origin main
