@@ -30,10 +30,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name ${{ secrets.GH_USERNAME }}
-          git config --global user.email ${{ secrets.GH_MAIL }}
+          git config user.name "github-actions"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -am "New Consul release version `cat .github/workflows/release_version/latest.txt`"
           git push origin main
           
-  #         git pull --ff-only
-  # git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/hashicorp-education/learn-consul-tutorial-testing-phase-0
+#          git config --global user.name ${{ secrets.GH_USERNAME }}
+#          git config --global user.email ${{ secrets.GH_MAIL }}
+#          git pull --ff-only
+#          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/hashicorp-education/learn-consul-tutorial-testing-phase-0
