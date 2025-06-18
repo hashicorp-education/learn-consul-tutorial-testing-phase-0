@@ -1,7 +1,11 @@
 name: Get latest Consul release
 on:
   schedule:
-    - cron:  '*/15 * * * *'
+    - cron:  '*/5 * * * *'
+
+permissions:
+  actions: write
+
 jobs:
   get-version:
     runs-on: ubuntu-latest
