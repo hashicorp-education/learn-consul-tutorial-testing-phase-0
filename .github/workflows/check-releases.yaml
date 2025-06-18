@@ -7,8 +7,8 @@ on:
 permissions:
   actions: write
   contents: write
-#  packages: write
-#  id-token: write
+  packages: write
+  id-token: write
 
 jobs:
   get-version:
