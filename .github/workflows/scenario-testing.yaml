@@ -71,6 +71,7 @@ jobs:
       id: doormat-action
       uses: hashicorp/doormat-action@v1
       with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         aws-role-arn: ${{ secrets.DOORMAT_ROLE_ARN}}
     - run: aws sts get-caller-identity
     - run: aws ec2 describe-regions
