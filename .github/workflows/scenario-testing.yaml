@@ -80,7 +80,8 @@ jobs:
         cd self-managed/infrastructure/aws
         terraform init | tee -a $WORKFLOW_STEP_REPORT
         terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
-        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+        terraform plan
+#        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
     - name: Create Jira report
       uses: bryannice/gitactions-jira-issue-creation@master
       if: failure()
