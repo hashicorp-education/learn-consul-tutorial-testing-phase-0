@@ -4,6 +4,7 @@ on:
     - cron:  '*/5 * * * *'
 
 permissions:
+  actions: write
   contents: write
 
 jobs:
