@@ -2,7 +2,7 @@ name: Get latest release
 on:
   schedule:
     - cron:  '*/5 * * * *'
-  # workflow_dispatch: 
+  workflow_dispatch: 
 
 permissions:
   actions: write
