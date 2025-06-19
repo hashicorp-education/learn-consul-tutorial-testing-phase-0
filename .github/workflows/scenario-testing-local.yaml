@@ -1,0 +1,88 @@
+
+name: Scenario testing for local environment
+
+# Controls when the action will run. Workflow runs when manually triggered.
+on: 
+  workflow_dispatch:
+    inputs:
+      CONSUL_VERSION:
+        description: 'Consul version for the testing'     
+        required: true
+        default: 'latest'
+  push:
+    paths:
+      - '.github/workflows/release-version/*'
+
+env:
+  WORKFLOW_STEP_REPORT: /home/runner/workflow.log
+
+permissions:
+  contents: write # required permission to delete artifact
+  actions: write
+  packages: write
+  id-token: write
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "greet"
+  build_and_run:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Prerequisites
+      run: |
+        touch $WORKFLOW_STEP_REPORT
+        ln $WORKFLOW_STEP_REPORT workflow.log
+        echo "Install prerequisites step" > $WORKFLOW_STEP_REPORT
+        sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+        wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+        gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update
+        sudo apt-get install terraform
+    - name: Build Docker Images
+      run: |
+        echo "Build Docker Images" > $WORKFLOW_STEP_REPORT
+        cd self-managed/infrastructure/docker/images
+        ./generate_variables.sh ${{ inputs.CONSUL_VERSION }}
+        echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
+        ./build_images.sh | tee -a $WORKFLOW_STEP_REPORT
+    - name: Run GS 1
+      run: |
+        echo "Run GS 1" > $WORKFLOW_STEP_REPORT
+        cd self-managed/infrastructure/docker
+        terraform init | tee -a $WORKFLOW_STEP_REPORT
+        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+    - name: Run GS 2
+      run: |
+        echo "Run GS 2" > $WORKFLOW_STEP_REPORT
+        cd self-managed/infrastructure/docker
+        terraform init | tee -a $WORKFLOW_STEP_REPORT
+        terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
+        terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+    - name: Create Jira report
+      uses: bryannice/gitactions-jira-issue-creation@master
+      if: failure()
+      env:
+        JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+        JIRA_ACCOUNT_URL: https://hashicorp.atlassian.net/
+        JIRA_PROJECT: CE
+        JIRA_ISSUE_TYPE: Tutorial bug report
+        JIRA_ISSUE_SUMMARY: Failed AWS build for ${{ env.CONSUL_VERSION }}.
+        JIRA_ISSUE_DESCRIPTION: Automated testing for Consul tutorial.
+        JIRA_ISSUE_ATTACHMENT: workflow.log
+    - name: Release and publish
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ./runbooks/self_managed-docker*
+        tag: ${{ env.CONSUL_VERSION }}
+        overwrite: true
+        file_glob: true
+        body: "Automated release for Consul ${{ env.CONSUL_VERSION }}"
