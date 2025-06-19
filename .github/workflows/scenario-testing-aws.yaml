@@ -11,7 +11,7 @@ on:
         default: 'latest'
   push:
     paths:
-      - '.github/workflows/release-version/*'
+      - '.github/workflows/release_version/*'
 
 env:
   WORKFLOW_STEP_REPORT: /home/runner/workflow.log
