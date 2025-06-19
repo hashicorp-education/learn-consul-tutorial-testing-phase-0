@@ -39,7 +39,7 @@ jobs:
       run: |
         touch $WORKFLOW_STEP_REPORT
         ln $WORKFLOW_STEP_REPORT workflow.log
-        rouch $JIRA_DESCRIPTION_FILE
+        touch $JIRA_DESCRIPTION_FILE
         ln $JIRA_DESCRIPTION_FILE description.md
         echo "Install prerequisites step" > $WORKFLOW_STEP_REPORT
         echo "# Automated testing for $TUTORIAL_TITLE" > $JIRA_DESCRIPTION_FILE
