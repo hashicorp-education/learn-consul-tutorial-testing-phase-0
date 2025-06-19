@@ -93,8 +93,8 @@ jobs:
         JIRA_ACCOUNT_URL: https://hashicorp.atlassian.net/
         JIRA_PROJECT: CE
         JIRA_ISSUE_TYPE: Tutorial bug report
-        JIRA_ISSUE_SUMMARY: Failed local build for $TUTORIAL_TITLE for Consul ${{ env.CONSUL_VERSION }}.
-        JIRA_ISSUE_DESCRIPTION: $JIRA_DESCRIPTION
+        JIRA_ISSUE_SUMMARY: Failed local build for ${{ env.TUTORIAL_TITLE }} for Consul ${{ env.CONSUL_VERSION }}.
+        JIRA_ISSUE_DESCRIPTION: ${{ env.JIRA_DESCRIPTION }}
         JIRA_ISSUE_ATTACHMENT: workflow.log
     - name: Release and publish
       uses: svenstaro/upload-release-action@v2
