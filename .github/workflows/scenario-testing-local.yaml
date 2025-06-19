@@ -83,7 +83,7 @@ jobs:
     - name: Create issue desctiption
       if: failure()
       run: |
-        echo -e "JIRA_DESCRIPTION = <<EOF\n`cat $JIRA_DESCRIPTION_FILE`\nEOF >> $GITHUB_ENV
+        echo -e "JIRA_DESCRIPTION = <<EOFS \n `cat $JIRA_DESCRIPTION_FILE` \n EOFS >> $GITHUB_ENV
     - name: Create Jira report
       uses: bryannice/gitactions-jira-issue-creation@master
       if: failure()
