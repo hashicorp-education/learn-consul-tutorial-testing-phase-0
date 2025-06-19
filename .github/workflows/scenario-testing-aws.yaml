@@ -25,7 +25,7 @@ permissions:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "greet"
-  build_and_run:
+  build_and_run_aws:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
