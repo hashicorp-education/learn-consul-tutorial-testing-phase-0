@@ -15,6 +15,8 @@ on:
 
 env:
   WORKFLOW_STEP_REPORT: /home/runner/workflow.log
+  JIRA_DESCRIPTION_FILE: /home/runner/description.md
+  TUTORIAL_TITLE: "Getting started with Consul on VMs - Local"
 
 permissions:
   contents: write # required permission to delete artifact
@@ -37,34 +39,51 @@ jobs:
       run: |
         touch $WORKFLOW_STEP_REPORT
         ln $WORKFLOW_STEP_REPORT workflow.log
+        rouch $JIRA_DESCRIPTION_FILE
+        ln $JIRA_DESCRIPTION_FILE description.md
         echo "Install prerequisites step" > $WORKFLOW_STEP_REPORT
+        echo "# Automated testing for $TUTORIAL_TITLE" > $JIRA_DESCRIPTION_FILE
+        echo -n "* Install prerequisites..." >> $JIRA_DESCRIPTION_FILE
         sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
         wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
         gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
         sudo apt update
         sudo apt-get install terraform
+        echo  "DONE" >> $JIRA_DESCRIPTION_FILE
     - name: Build Docker Images
       run: |
         echo "Build Docker Images" > $WORKFLOW_STEP_REPORT
+        echo -n "* Build Docker Images..." >> $JIRA_DESCRIPTION_FILE
         cd self-managed/infrastructure/docker/images
         ./generate_variables.sh ${{ inputs.CONSUL_VERSION }}
         echo `cat variables.env | grep CONSUL_VERSION` >> $GITHUB_ENV
         ./build_images.sh | tee -a $WORKFLOW_STEP_REPORT
-    - name: Run GS 1
+        echo  "DONE" >> $JIRA_DESCRIPTION_FILE
+        cat variables.env >> $JIRA_DESCRIPTION_FILE
+    - name: Run GS 1 - Deploy Consul on VMs
       run: |
-        echo "Run GS 1" > $WORKFLOW_STEP_REPORT
+        echo "Run GS 1 - Deploy Consul on VMs" > $WORKFLOW_STEP_REPORT
+        echo "## Run GS 1 - Deploy Consul on VMs" >> $JIRA_DESCRIPTION_FILE
+        exit 1
         cd self-managed/infrastructure/docker
         terraform init | tee -a $WORKFLOW_STEP_REPORT
         terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
         terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
-    - name: Run GS 2
+        echo "SUCCESS" >> $JIRA_DESCRIPTION_FILE
+    - name: Run GS 2 - Register your services to Consul
       run: |
-        echo "Run GS 2" > $WORKFLOW_STEP_REPORT
+        echo "Run GS 2 - Register your services to Consul" > $WORKFLOW_STEP_REPORT
+        echo "## Run GS 2 - Register your services to Consul" >> $JIRA_DESCRIPTION_FILE
         cd self-managed/infrastructure/docker
         terraform init | tee -a $WORKFLOW_STEP_REPORT
         terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
         terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
+        echo "SUCCESS" >> $JIRA_DESCRIPTION_FILE
+    - name: Create issue desctiption
+      if: failure()
+      run: |
+        echo -e "JIRA_DESCRIPTION = <<EOF\n`cat $JIRA_DESCRIPTION_FILE`\nEOF >> $GITHUB_ENV
     - name: Create Jira report
       uses: bryannice/gitactions-jira-issue-creation@master
       if: failure()
@@ -74,8 +93,8 @@ jobs:
         JIRA_ACCOUNT_URL: https://hashicorp.atlassian.net/
         JIRA_PROJECT: CE
         JIRA_ISSUE_TYPE: Tutorial bug report
-        JIRA_ISSUE_SUMMARY: Failed AWS build for ${{ env.CONSUL_VERSION }}.
-        JIRA_ISSUE_DESCRIPTION: Automated testing for Consul tutorial.
+        JIRA_ISSUE_SUMMARY: Failed local build for $TUTORIAL_TITLE for Consul ${{ env.CONSUL_VERSION }}.
+        JIRA_ISSUE_DESCRIPTION: $JIRA_DESCRIPTION
         JIRA_ISSUE_ATTACHMENT: workflow.log
     - name: Release and publish
       uses: svenstaro/upload-release-action@v2
