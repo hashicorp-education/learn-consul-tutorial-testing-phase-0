@@ -80,10 +80,10 @@ jobs:
         terraform destroy --auto-approve | tee -a $WORKFLOW_STEP_REPORT
         terraform apply --auto-approve --var-file=../../ops/conf/GS_01_deploy_consul.tfvars -var="solve_scenario=true" | tee -a $WORKFLOW_STEP_REPORT
         echo "SUCCESS" >> $JIRA_DESCRIPTION_FILE
-    - name: Create issue desctiption
-      if: failure()
-      run: |
-        echo -e JIRA_DESCRIPTION = <<EOFS \n `cat $JIRA_DESCRIPTION_FILE` \n EOFS >> $GITHUB_ENV
+    # - name: Create issue desctiption
+    #   if: failure()
+    #   run: |
+    #     echo -e JIRA_DESCRIPTION = <<EOFS \n `cat $JIRA_DESCRIPTION_FILE` \n EOFS >> $GITHUB_ENV
     - name: Create Jira report
       uses: bryannice/gitactions-jira-issue-creation@master
       if: failure()
@@ -94,8 +94,9 @@ jobs:
         JIRA_PROJECT: CE
         JIRA_ISSUE_TYPE: Tutorial bug report
         JIRA_ISSUE_SUMMARY: Failed local build for ${{ env.TUTORIAL_TITLE }} for Consul ${{ env.CONSUL_VERSION }}.
-        JIRA_ISSUE_DESCRIPTION: ${{ env.JIRA_DESCRIPTION }}
+        JIRA_ISSUE_DESCRIPTION: Failed local build for ${{ env.TUTORIAL_TITLE }} for Consul ${{ env.CONSUL_VERSION }}. Check attachments for more info.
         JIRA_ISSUE_ATTACHMENT: workflow.log
+        JIRA_ISSUE_ATTACHMENT: description.md
     - name: Release and publish
       uses: svenstaro/upload-release-action@v2
       with:
