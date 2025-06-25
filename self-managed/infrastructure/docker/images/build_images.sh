@@ -88,9 +88,14 @@ LS_TAG="-t ${DOCKER_REPOSITORY}/${DOCKER_BASE_IMAGE}:${DOCKER_REPOSITORY}"
 
 set -x 
 
+docker build -t learn-consul-vms/base-image:latest -t learn-consul-vms/base-image:latest -t learn-consul-vms/base-image:learn-consul-vms .
+
+
 ## Build Docker image
 DOCKER_BUILDKIT=1 docker build \
   -t "${IMAGE_TAG}" ${LATEST_TAG} ${LS_TAG} . > /dev/null 2>&1
+
+
 
 if [ $? != 0 ]; then
   ts_log "\033[1m\033[31m[ERROR]\033[0m - Failed build for ${DOCKER_REPOSITORY}/${DOCKER_BASE_IMAGE}:v${CONSUL_TAG_VERSION}...exiting."
