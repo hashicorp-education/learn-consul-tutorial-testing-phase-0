@@ -1,5 +1,12 @@
 version: 0.2
 
+env:
+  secrets-manager:
+    docker_token: "BUILD_TOKENS:DOCKER_TOKEN"
+    jira_token: "BUILD_TOKENS:JIRA_TOKEN"
+    # <Variable Name>: "<SecretName>:<SecretKey>:<Version(optiional)>"
+    # You can add multiple variables if you are fetching multiple SecretKey.
+
 phases:
   install:
     commands:
@@ -17,10 +24,8 @@ phases:
   pre_build:
     commands:
       - echo "=== PRE-Build ==="
-      - TEST_VAR=test_value
-      - echo $TEST_VAR
-      - sudo docker help
-      - docker help
+      - echo "Docker Login"
+      - echo "$docker_token" | docker login -u danielehc --password-stdin
 
       # - echo "=== AWS Identity Information ==="
       # - aws sts get-caller-identity
