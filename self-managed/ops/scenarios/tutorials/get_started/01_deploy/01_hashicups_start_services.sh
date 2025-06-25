@@ -68,9 +68,12 @@ for node in "${NODES_ARRAY[@]}"; do
       log_debug "Deployment state cleaned"
 
       log_debug "Installing new version."
+      set -x 
+
       remote_copy ${NODE_NAME}        ${SCENARIO_OUTPUT_FOLDER}start_${SCRIPT_SVC_NAME}.sh ~/hc_service.sh
       remote_copy ${NODE_NAME}        ${SCENARIO_OUTPUT_FOLDER}start_${SCRIPT_SVC_NAME}.sh ~/start_service.sh
-
+      
+      set +x 
 
     else 
         log_err "Cloud provider $SCENARIO_CLOUD_PROVIDER is unsupported...exiting."
