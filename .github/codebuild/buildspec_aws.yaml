@@ -26,12 +26,11 @@ phases:
       - echo "=== PRE-Build ==="
       # - echo "Docker Login"
       # - echo "$docker_token" | docker login -u danielehc --password-stdin
-
       - echo "=== AWS Identity Information ==="
       - aws sts get-caller-identity
       - echo "=== IAM Role Details ==="
       - ROLE_NAME=$(aws sts get-caller-identity --query Arn --output text | cut -d'/' -f2)
-      - echo "Role Name: $ROLE_NAME"
+      - echo "Role Name:" $ROLE_NAME
       - echo "=== Attached Policies ==="
       - aws iam list-attached-role-policies --role-name $ROLE_NAME || true
       - echo "=== Inline Policies ==="
