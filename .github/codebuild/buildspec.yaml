@@ -58,6 +58,9 @@ phases:
       # - terraform plan -out=tfplan
       # - echo "Applying Terraform changes"
       # - terraform apply -auto-approve tfplan
+    finally:
+      - "Check for failure"
+      - terraform destroy --auto-approve
   
   post_build:
     commands:
