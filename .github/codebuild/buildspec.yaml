@@ -17,7 +17,11 @@ phases:
   pre_build:
     commands:
       - echo "=== PRE-Build ==="
-      
+      - TEST_VAR=test_value
+      - echo $TEST_VAR
+      - sudo docker help
+      - docker help
+
       # - echo "=== AWS Identity Information ==="
       # - aws sts get-caller-identity
       # - echo "=== IAM Role Details ==="
@@ -42,8 +46,6 @@ phases:
       - ./build_images.sh
       - echo "Run GS 1 - Deploy Consul on VMs"
       - cd ..
-      - TEST_VAR=test_value
-      - echo $TEST_VAR
       - terraform init
       - terraform destroy --auto-approve
       - terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
