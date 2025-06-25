@@ -3,10 +3,11 @@ version: 0.2
 phases:
   install:
     commands:
+      - echo "=== Install Prerequisites ==="
       - sudo yum install -y yum-utils
       - sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
       - sudo yum -y install terraform
-      
+
       # - echo "Installing Terraform version $TF_VERSION"
       # - wget -q https://releases.hashicorp.com/terraform/$${TF_VERSION}/terraform_$${TF_VERSION}_linux_amd64.zip
       # - unzip -q terraform_$${TF_VERSION}_linux_amd64.zip
@@ -15,9 +16,8 @@ phases:
   
   pre_build:
     commands:
-      - echo "=== TEST BUILD ==="
-      - pwd
-      - ls -l
+      - echo "=== PRE-Build ==="
+      
       # - echo "=== AWS Identity Information ==="
       # - aws sts get-caller-identity
       # - echo "=== IAM Role Details ==="
@@ -35,7 +35,18 @@ phases:
   
   build:
     commands:
-      - echo "Build Phase"
+      - echo "=== Build ==="
+      - echo "Build Docker Images"
+      - cd self-managed/infrastructure/docker/images
+      - ./generate_variables.sh
+      - ./build_images.sh
+      - echo "Run GS 1 - Deploy Consul on VMs"
+      - cd ..
+      - TEST_VAR=test_value
+      - echo $TEST_VAR
+      - terraform init
+      - terraform destroy --auto-approve
+      - terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
       # - echo "Planning Terraform changes"
       # - terraform plan -out=tfplan
       # - echo "Applying Terraform changes"
