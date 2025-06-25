@@ -1,0 +1,74 @@
+version: 0.2
+
+env:
+  secrets-manager:
+    docker_token: "BUILD_TOKENS:DOCKER_TOKEN"
+    jira_token: "BUILD_TOKENS:JIRA_TOKEN"
+    # <Variable Name>: "<SecretName>:<SecretKey>:<Version(optiional)>"
+    # You can add multiple variables if you are fetching multiple SecretKey.
+
+phases:
+  install:
+    commands:
+      - echo "=== Install Prerequisites ==="
+      - sudo yum install -y yum-utils
+      - sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+      - sudo yum -y install terraform
+
+      # - echo "Installing Terraform version $TF_VERSION"
+      # - wget -q https://releases.hashicorp.com/terraform/$${TF_VERSION}/terraform_$${TF_VERSION}_linux_amd64.zip
+      # - unzip -q terraform_$${TF_VERSION}_linux_amd64.zip
+      # - mv terraform /usr/local/bin/
+      # - terraform --version
+  
+  pre_build:
+    commands:
+      - echo "=== PRE-Build ==="
+      # - echo "Docker Login"
+      # - echo "$docker_token" | docker login -u danielehc --password-stdin
+
+      - echo "=== AWS Identity Information ==="
+      - aws sts get-caller-identity
+      - echo "=== IAM Role Details ==="
+      - ROLE_NAME=$(aws sts get-caller-identity --query Arn --output text | cut -d'/' -f2)
+      - echo "Role Name: $ROLE_NAME"
+      - echo "=== Attached Policies ==="
+      - aws iam list-attached-role-policies --role-name $ROLE_NAME || true
+      - echo "=== Inline Policies ==="
+      - aws iam list-role-policies --role-name $ROLE_NAME || true
+      # - echo "================================"
+      # - echo "Initializing Terraform"
+      # - cd $CODEBUILD_SRC_DIR
+      # - terraform init
+      # - terraform validate
+  
+  build:
+    commands:
+      - echo "=== Build ==="
+      # - echo "Build Docker Images"
+      # - cd self-managed/infrastructure/docker/images
+      # - ./generate_variables.sh
+      # - ./build_images.sh
+      - echo "Run GS 1 - Deploy Consul on VMs"
+      - cd self-managed/infrastructure/aws
+      - terraform init
+      - terraform destroy --auto-approve
+      - terraform apply --auto-approve --var-file=../../ops/conf/GS_00_base_scenario.tfvars -var="solve_scenario=true"
+      # - echo "Planning Terraform changes"
+      # - terraform plan -out=tfplan
+      # - echo "Applying Terraform changes"
+      # - terraform apply -auto-approve tfplan
+    finally:
+      - echo "Check for failure"
+      - terraform destroy --auto-approve
+  
+  post_build:
+    commands:
+      - echo "POST-Build Phase"
+      # - echo "Terraform apply completed on $(date)"
+      # - terraform output -json > outputs.json
+
+cache:
+  paths:
+    - '.terraform/**/*'
+    - '.terraform.lock.hcl'
